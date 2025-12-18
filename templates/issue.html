@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>
+    {% if paper_name == "both" %}
+      Both Papers - Issue {{ issue_date.strftime("%d/%m/%Y") }} - E-Newspaper
+    {% else %}
+      {{ paper_name }} - Issue {{ issue_date.strftime("%d/%m/%Y") }} - E-Newspaper
+    {% endif %}
+  </title>
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  </head>
+
+<body class="light">
+  <header class="site-header">
+    <div class="container row between center">
+      <a class="brand row center" href="{{ url_for('index') }}">
+        <img class="logo" src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo">
+        <span class="brand-name">ಪ್ರಜಾಯೋಗ</span>
+      </a>
+      <div class="nav-links">
+        <a href="{{ url_for('index') }}">Home</a>
+        {% if session.get("is_admin") %}
+          <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+          <a href="{{ url_for('admin_logout') }}">Logout</a>
+        {% endif %}
+      </div>
+      <button class="menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <div class="side-panel" id="sidePanel">
+    <a href="{{ url_for('index') }}">Home</a>
+    {% if session.get("is_admin") %}
+      <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+      <a href="{{ url_for('admin_logout') }}">Logout</a>
+    {% endif %}
+  </div>
+  <div class="overlay" id="overlay"></div>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <h1 class="page-title">Issue for {{ issue_date.strftime("%d/%m/%Y") }}</h1>
+
+    {% macro render_issue_view(issue, viewer_id) %}
+      <div class="page-viewer" id="{{ viewer_id }}">
+        {% for p in issue.pages %}
+          <div class="page-container" style="display: none;">
+            <img loading="lazy"
+                 src="{{ url_for('media', paper=issue.paper, datestr=issue.issue_date.strftime('%Y-%m-%d'), filename=p.filename) }}"
+                 alt="Page {{ p.page_no }}">
+            {% for b in p.blocks %}
+              <a class="block-overlay" href="{{ url_for('view_block', block_id=b.id) }}"
+                 style="top:{{ b.y }}%; left:{{ b.x }}%; width:{{ b.width }}%; height:{{ b.height }}%;"></a>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <button class="nav-btn left" data-viewer="{{ viewer_id }}" aria-label="Previous">⟨</button>
+        <button class="nav-btn right" data-viewer="{{ viewer_id }}" aria-label="Next">⟩</button>
+        <div class="page-number" id="{{ viewer_id }}-pageNumber"></div>
+        <div class="dots" id="{{ viewer_id }}-dots"></div>
+      </div>
+    {% endmacro %}
+
+    {% if paper_name == "both" or paper_name == "Today’s Paper" %}
+      <h2 class="section-title">Today’s Paper</h2>
+      {% if todays_issue %}
+        {{ render_issue_view(todays_issue, "todaysViewer") }}
+      {% else %}
+        {% if paper_name == "both" %}
+          <div class="card">No Today’s Paper uploaded for {{ issue_date.strftime("%d/%m/%Y") }}.</div>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+    {% if paper_name == "both" or paper_name == "Namma Tumkur" %}
+      <h2 class="section-title">ನಮ್ಮ ತುಮಕೂರು</h2>
+      {% if tumkur_issue %}
+        {{ render_issue_view(tumkur_issue, "tumkurViewer") }}
+      {% else %}
+        {% if paper_name == "both" %}
+          <div class="card">No Namma Tumkur uploaded for {{ issue_date.strftime("%d/%m/%Y") }}.</div>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container small muted">© 2025 E-Newspaper</div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+ </body>
+</html>

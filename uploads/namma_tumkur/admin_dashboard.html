@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Dashboard - E-Newspaper</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="light">
+  <header class="site-header">
+    <div class="container row between center">
+      <!-- Brand -->
+      <a class="brand row center" href="{{ url_for('index') }}">
+        <img class="logo" src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo">
+        <span class="brand-name">ಪ್ರಜಾಯೋಗ</span>
+      </a>
+
+      <!-- Nav links -->
+      <div class="nav-links">
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('admin_logout') }}">Logout</a>
+      </div>
+      
+      <!-- Menu button (mobile) -->
+      <button class="menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <!-- Side Panel -->
+  <div class="side-panel" id="sidePanel">
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('admin_logout') }}">Logout</a>
+  </div>
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay"></div>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <h1 class="page-title">Admin Dashboard</h1>
+
+    <!-- Upload Form -->
+    <div class="card">
+      <h2>Upload New Issue</h2>
+      <form action="{{ url_for('admin_upload') }}" method="post" enctype="multipart/form-data">
+        <label for="paper">Select Newspaper</label>
+        <select id="paper" name="paper" class="styled-select" required>
+<option value="namma_tumkur">ನಮ್ಮ ತುಮಕೂರು</option>
+          <option value="todays_paper">Today’s Paper</option>
+                  </select>
+
+        <label for="issue_date">Issue Date</label>
+        <input id="issue_date" name="issue_date" type="date" required>
+
+        <label for="pdf">Upload Newspaper PDF</label>
+<input id="pdf" name="pdf" type="file"
+       accept=".pdf,.png,.jpg" required>
+
+        <div class="form-actions">
+          <button class="btn upload-btn" type="submit">Upload</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Existing Issues -->
+    <h2 class="section-title">Uploaded Issues</h2>
+    <div class="cards-grid">
+      {% for issue in issues %}
+        <div class="card issue-card">
+          <div class="issue-date">
+            <strong>{{ issue.paper.replace("_"," ").title() }}</strong> – {{ issue.issue_date.strftime("%d/%m/%Y") }}
+          </div>
+
+          <div class="issue-actions">
+            <!-- Delete Issue -->
+            <form action="{{ url_for('admin_delete_issue', issue_id=issue.id) }}" method="post" onsubmit="return confirm('Delete this issue?')">
+              <button class="btn danger" type="submit">Delete</button>
+            </form>
+
+            <!-- View Issue -->
+            <a class="btn view-btn" href="{{ url_for('view_issue', paper=issue.paper, datestr=issue.issue_date) }}" target="_blank">View</a>
+
+            <!-- Block Selector -->
+            <a class="btn block-btn" href="{{ url_for('admin_block_selector', issue_id=issue.id) }}" target="_blank">Block Selector</a>
+          </div>
+        </div>
+      {% else %}
+        <div class="muted">No issues uploaded yet.</div>
+      {% endfor %}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container small muted">2025 E-Newspaper</div>
+  </footer>
+
+  <!-- Include JS -->
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

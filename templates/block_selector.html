@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Block Selector - E-Newspaper</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  
+</head>
+<body class="light">
+  <header class="site-header">
+    <div class="container row between center">
+      <a class="brand row center" href="{{ url_for('admin_dashboard') }}">
+        <img class="logo" src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo">
+        <span class="brand-name">ಪ್ರಜಾಯೋಗ</span>
+      </a>
+      <div class="nav-links">
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+        <a href="{{ url_for('admin_logout') }}">Logout</a>
+      </div>
+      <button class="menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <!-- ✅ Side Panel -->
+  <div class="side-panel" id="sidePanel">
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+    <a href="{{ url_for('admin_logout') }}">Logout</a>
+  </div>
+
+  <!-- ✅ Added Overlay (this was missing) -->
+  <div class="overlay" id="overlay"></div>
+
+  <main class="container">
+    <h1 class="page-title">Select Blocks for Issue {{ issue.issue_date.strftime("%d/%m/%Y") }}</h1>
+
+    <form id="blocksForm" method="POST" action="{{ url_for('save_blocks', issue_id=issue.id) }}">
+      {% for page in issue.pages %}
+        <h2>Page {{ page.page_no }}</h2>
+        <div class="page-container" data-page-id="{{ page.id }}">
+          <img src="{{ url_for('media', paper=issue.paper, datestr=issue.issue_date.strftime('%Y-%m-%d'), filename=page.filename) }}">
+        </div>
+      {% endfor %}
+      <button class="btn btn-save" type="submit">Save Blocks</button>
+    </form>
+  </main>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+ </body>
+</html>

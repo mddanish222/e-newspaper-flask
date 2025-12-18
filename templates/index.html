@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>E-Newspaper</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="light">
+<header class="site-header">
+  <div class="container row between center">
+    <a class="brand row center" href="{{ url_for('index') }}">
+      <img class="logo" src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo">
+      <span class="brand-name">ಪ್ರಜಾಯೋಗ</span>
+    </a>
+
+    <div class="nav-links">
+      {% if session.get("is_admin") %}
+        <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+        <a href="{{ url_for('admin_logout') }}">Logout</a>
+      {% endif %}
+    </div>
+
+    <button class="menu-btn" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<div class="side-panel" id="sidePanel">
+  <a href="{{ url_for('index') }}">Home</a>
+  {% if session.get("is_admin") %}
+    <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+    <a href="{{ url_for('admin_logout') }}">Logout</a>
+  {% endif %}
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<main class="container">
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-stack">
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<h1 class="page-title">Read the paper by date</h1>
+
+<form class="card row gap" onsubmit="return goToDate(event)">
+  <label for="date">Select date</label>
+  <input id="date" type="date"
+         value="{{ today.isoformat() }}"
+         max="{{ today.isoformat() }}" required>
+  <button class="btn">Open</button>
+</form>
+
+<div class="cards-grid two-cards">
+
+  {% if tumkur_issue %}
+    <div class="card-container">
+      <h2 class="section-title">ನಮ್ಮ ತುಮಕೂರು</h2>
+
+      {% if tumkur_issue.pages|length > 0 %}
+        <a class="card issue-card"
+           href="{{ url_for('view_issue',
+                            paper='namma_tumkur',
+                            datestr=tumkur_issue.issue_date.strftime('%Y-%m-%d')) }}">
+          <div class="issue-date">
+            Date: {{ tumkur_issue.issue_date.strftime("%d/%m/%Y") }}
+          </div>
+
+          <img class="preview"
+               src="{{ url_for('media',
+                                paper='namma_tumkur',
+                                datestr=tumkur_issue.issue_date.strftime('%Y-%m-%d'),
+                                filename=tumkur_issue.pages[0].filename) }}">
+        </a>
+      {% else %}
+        <div class="card muted">No pages uploaded yet.</div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if todays_issue %}
+    <div class="card-container">
+      <h2 class="section-title">Today’s Paper</h2>
+
+      {% if todays_issue.pages|length > 0 %}
+        <a class="card issue-card"
+           href="{{ url_for('view_issue',
+                            paper='todays_paper',
+                            datestr=todays_issue.issue_date.strftime('%Y-%m-%d')) }}">
+          <div class="issue-date">
+            Date: {{ todays_issue.issue_date.strftime("%d/%m/%Y") }}
+          </div>
+
+          <img class="preview"
+               src="{{ url_for('media',
+                                paper='todays_paper',
+                                datestr=todays_issue.issue_date.strftime('%Y-%m-%d'),
+                                filename=todays_issue.pages[0].filename) }}">
+        </a>
+      {% else %}
+        <div class="card muted">No pages uploaded yet.</div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+</div>
+</main>
+
+<footer class="site-footer">
+  <div class="container small muted">© 2025 E-Newspaper</div>
+</footer>
+
+<script>
+function goToDate(e) {
+  e.preventDefault();
+  const d = document.getElementById("date").value;
+  window.location.href = "/issue/both/" + d;
+}
+</script>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

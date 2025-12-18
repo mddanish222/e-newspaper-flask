@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Login - E-Newspaper</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="light">
+  <header class="site-header">
+    <div class="container row between center">
+      <!-- Brand -->
+      <a class="brand row center" href="{{ url_for('index') }}">
+        <img class="logo" src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo">
+        <span class="brand-name">ಪ್ರಜಾಯೋಗ</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <h1 class="page-title">Admin Login</h1>
+
+    <div class="card">
+      <form action="{{ url_for('admin_login') }}" method="post" class="column gap">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" required autofocus>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required>
+
+       <br><br><button class="btn" type="submit">Login</button>
+      </form>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container small muted"> E-Newspaper</div>
+  </footer>
+</body>
+</html>

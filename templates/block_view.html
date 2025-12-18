@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Block View</title>
+
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    font-family: sans-serif;
+    background-color: #f5f5f5;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  /* Close button */
+  .close-btn {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    font-size: 40px;
+    color: black;
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.2s ease;
+  }
+
+  .close-btn:hover {
+    transform: scale(1.2);
+  }
+
+  canvas {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    display: block;
+    background: white;
+  }
+
+  /* Responsive max size */
+  @media (max-width: 767px) {
+    canvas { max-width: 95vw; }
+  }
+</style>
+</head>
+
+<body>
+
+<button class="close-btn" onclick="goBack()">×</button>
+
+<h1>View - Page {{ page.page_no }}</h1>
+
+<canvas id="blockCanvas"></canvas>
+
+<script>
+  // Flask-safe block data
+  const block = JSON.parse('{{ {
+    "x": block.x,
+    "y": block.y,
+    "width": block.width,
+    "height": block.height
+  } | tojson | safe }}');
+
+  const imgSrc = "{{ url_for('media', paper=issue.paper, datestr=issue.issue_date.strftime('%Y-%m-%d'), filename=page.filename) }}";
+  const issueUrl = "{{ url_for('view_issue', paper=issue.paper, datestr=issue.issue_date.strftime('%Y-%m-%d')) }}";
+
+  function goBack() {
+    window.location.href = issueUrl;
+  }
+
+  const img = new Image();
+  img.src = imgSrc;
+
+  img.onload = () => {
+    const canvas = document.getElementById("blockCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Convert percentage to real pixels
+    const cropX = img.width * (block.x / 100);
+    const cropY = img.height * (block.y / 100);
+    const cropW = img.width * (block.width / 100);
+    const cropH = img.height * (block.height / 100);
+
+    // Maximum display size
+    const MAX_W = 650;
+    const MAX_H = 500;
+
+    // Maintain aspect ratio
+    const scale = Math.min(
+      MAX_W / cropW,
+      MAX_H / cropH,
+      1
+    );
+
+    const drawW = Math.round(cropW * scale);
+    const drawH = Math.round(cropH * scale);
+
+    // Hi-DPI / Retina
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = drawW * dpr;
+    canvas.height = drawH * dpr;
+
+    canvas.style.width = drawW + "px";
+    canvas.style.height = drawH + "px";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+   
+    ctx.clearRect(0, 0, drawW, drawH);
+
+    // Draw sharp image
+    ctx.drawImage(
+      img,
+      cropX, cropY, cropW, cropH,
+      0, 0, drawW, drawH
+    );
+  };
+</script>
+
+</body>
+</html>
